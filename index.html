@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Before π₀ vs π₀: toast out of the toaster, simulated</title>
+<style>
+:root{--bg:#0B1118;--panel:#121A26;--line:#273246;--ink:#EEF2F7;--muted:#95A3B8;--red:#E6536A;--redsoft:#3A1C24;--green:#36C28E;--greensoft:#143428;--gold:#F2B705;--sky:#58B4F0}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:13px}
+body{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:8px;padding:8px 12px;overflow:hidden}
+.top{display:flex;align-items:center;gap:14px;padding:4px 4px 2px}
+.top h1{margin:0;font-size:18px;font-weight:800}
+.top h1 small{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:1px}
+.top .g{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{font:700 12px "Segoe UI",Arial,sans-serif;padding:7px 12px;border-radius:9px;border:1px solid var(--line);background:#182236;color:var(--ink);cursor:pointer}
+.btn.go{background:var(--gold);color:#1A1200;border-color:var(--gold)}
+.btn.big{font-size:14px;padding:9px 16px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0}
+.col{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:6px;min-height:0;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px;border-top:6px solid var(--red)}
+.col.pi0{border-top-color:var(--green)}
+.chead{display:flex;align-items:flex-start;gap:10px;min-height:50px}
+.col h2{margin:0;font-size:18px;line-height:1.2;flex:1;min-width:0}
+.col h2 span{display:block;font-size:14px;font-weight:400;color:#C4CEDB;margin-top:3px}
+.btns{display:flex;gap:6px;align-items:center;flex:none}
+.btns .clock{font:700 15px ui-monospace,Menlo,Consolas,monospace;color:var(--gold);margin-left:4px;min-width:42px;text-align:right}
+.stagerow{display:grid;grid-template-columns:minmax(0,1fr) clamp(110px,18%,180px);gap:6px;min-height:0}
+.view{position:relative;min-height:0;min-width:0;border-radius:10px;overflow:hidden;background:#1A2230;border:1px solid var(--line)}
+.view canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.badge{position:absolute;left:10px;top:8px;font-size:14px;font-weight:800;padding:5px 12px;border-radius:999px;background:rgba(11,17,24,.85);color:#fff}
+.col.pi0 .badge{background:#1F6F5B}
+.col.before .badge{background:#7A2231}
+.cap{position:absolute;left:10px;right:10px;bottom:8px;font-size:15px;line-height:1.35;padding:7px 11px;border-radius:8px;background:rgba(11,17,24,.82)}
+.cap b{color:var(--gold)}
+.cams{display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:6px;min-height:0}
+.cam{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#0E1520;min-height:0}
+.cam canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cam span{position:absolute;left:6px;bottom:4px;font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 2px #000}
+.info{display:grid;grid-template-columns:minmax(190px,240px) minmax(0,1fr) minmax(170px,210px);gap:8px;height:138px}
+.boxes{display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:4px;min-height:0}
+.boxes div{padding:4px 9px;border-radius:8px;border:1px solid var(--line);background:#0E1520;font-size:13px;font-weight:700;color:var(--muted);line-height:1.2;display:flex;flex-direction:column;justify-content:center;min-height:0}
+.boxes div b{display:block;color:#fff;font-size:14px;font-weight:600}
+.col.pi0 .boxes div.on{border-color:var(--green);background:var(--greensoft);color:#D9F7EC}
+.col.before .boxes div.on{border-color:var(--red);background:var(--redsoft);color:#FBDDE2}
+.heatwrap{display:grid;grid-template-rows:auto minmax(0,1fr);gap:3px;min-height:0;min-width:0}
+.heatwrap h3{margin:0;font-size:13px;font-weight:700;color:#C4CEDB;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heat{width:100%;height:100%;min-height:40px;border-radius:6px;background:#0A1018;display:block}
+.nums{display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:4px;min-height:0}
+.nums div{padding:2px 10px;border-radius:8px;background:#0E1520;border:1px solid var(--line);font-size:13px;color:#C4CEDB;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:0}
+.nums div b{font:700 20px ui-monospace,Menlo,Consolas,monospace;color:#fff}
+.col.pi0 .nums div b{color:#8FE3C9}
+.col.before .nums div b{color:#F3A6B8}
+.diff{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 12px 8px}
+.diff h2{margin:0 0 4px;font-size:17px}
+.diff table{width:100%;border-collapse:collapse;font-size:15px}
+.diff th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:3px 10px;border-bottom:1px solid var(--line)}
+.diff td{padding:4px 10px;border-bottom:1px solid #1C2636;vertical-align:top;line-height:1.3}
+.diff td:first-child{color:#C4CEDB;width:22%}
+.diff td.b{color:#F3A6B8;font-family:ui-monospace,Menlo,Consolas,monospace}
+.diff td.a{color:#8FE3C9;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
+.diff .src{font-size:12px;color:var(--muted);margin:5px 0 0}
+.err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(11,17,24,.95);padding:20px;z-index:9;cursor:pointer}
+.err.on{display:flex}
+.err div{max-width:640px;background:#182236;border:1px solid var(--line);border-radius:12px;padding:20px 24px;font-size:15px;line-height:1.5}
+.err code{color:var(--gold)}
+@media (max-height:880px){.col h2{font-size:16px}.col h2 span{font-size:13px}.cap{font-size:13.5px}.info{height:126px;grid-template-columns:minmax(170px,215px) minmax(0,1fr) minmax(150px,190px)}.boxes div{font-size:11.5px;padding:2px 8px;line-height:1.12}.boxes div b{font-size:12px}.nums div b{font-size:16px}.nums div{font-size:11.5px;padding:1px 8px}.heatwrap h3{font-size:11.5px}.diff table{font-size:13.5px}.diff td{padding:3px 10px}}
+@media (max-height:760px){.chead{min-height:42px}.col h2{font-size:15px}.col h2 span{font-size:12px}.info{height:108px}.boxes div{font-size:11px}.boxes div b{font-size:11.5px}.heatwrap h3{font-size:11px}.nums div b{font-size:15px}.diff h2{font-size:14px;margin:0 0 2px}.diff table{font-size:12.5px}.diff th{font-size:10.5px;padding:2px 10px}.diff td{padding:2px 10px}.diff .src{font-size:10.5px;margin:3px 0 0}}
+@media (max-height:700px),(max-width:1150px){body{overflow:auto;grid-template-rows:auto auto auto}.cols{grid-template-columns:1fr}.col{grid-template-rows:auto 380px auto}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>One chore, two ways: take the toast out of the toaster<small>Paper setup, simulated: bimanual Trossen (ALOHA-style), two 6-DoF arms, 3 cameras, 14 joint numbers, 50 Hz. Task from the paper’s out-of-box test (Fig. 6). Arm motion is keyframed; the decision loop, timings and numbers are the paper’s.</small></h1>
+  <div class="g"><button class="btn go big" id="playBoth">Play both</button><button class="btn" id="resetBoth">Reset both</button><button class="btn" id="camBtn">Camera angle</button></div>
+</div>
+<div class="cols">
+  <section class="col before" id="colB">
+    <div class="chead"><h2>Before π₀: token-by-token models (RT-2, OpenVLA)<span>Writes actions as word-like tokens, one action at a time, with no plan ahead.</span></h2><div class="btns"><button class="btn go" data-act="play">Play</button><button class="btn" data-act="replay">Replay</button><span class="clock">0:00</span></div></div>
+    <div class="stagerow">
+      <div class="view"><canvas class="gl"></canvas><span class="badge">Waiting</span><div class="cap">Press Play. Red line: the gripper’s path.</div></div>
+      <div class="cams"><div class="cam"><canvas></canvas><span>left wrist</span></div><div class="cam"><canvas></canvas><span>right wrist</span></div><div class="cam"><canvas></canvas><span>base camera</span></div></div>
+    </div>
+    <div class="info">
+      <div class="boxes"><div data-k="o">1. Observe<b>cameras, text, joints</b></div><div data-k="d">2. Decide<b>one action, then pause</b></div><div data-k="m">3. Move<b>one step</b></div></div>
+      <div class="heatwrap"><h3>Output: one action per decision</h3><canvas class="heat" width="300" height="90"></canvas></div>
+      <div class="nums"><div>decisions<b data-n="dec">0</b></div><div>time paused<b data-n="pause">0.0 s</b></div><div>on the plate<b data-n="placed">0 / 2</b></div></div>
+    </div>
+  </section>
+  <section class="col pi0" id="colA">
+    <div class="chead"><h2>With π₀ (Physical Intelligence, 2024)<span>Plans 50 actions at once from noise in 10 steps: 73 ms per plan, re-plans every 0.5 s.</span></h2><div class="btns"><button class="btn go" data-act="play">Play</button><button class="btn" data-act="replay">Replay</button><span class="clock">0:00</span></div></div>
+    <div class="stagerow">
+      <div class="view"><canvas class="gl"></canvas><span class="badge">Waiting</span><div class="cap">Press Play. Green line: the gripper’s path. Gold dots: the plan ahead.</div></div>
+      <div class="cams"><div class="cam"><canvas></canvas><span>left wrist</span></div><div class="cam"><canvas></canvas><span>right wrist</span></div><div class="cam"><canvas></canvas><span>base camera</span></div></div>
+    </div>
+    <div class="info">
+      <div class="boxes"><div data-k="o">1. Observe<b>once per plan, 46 ms</b></div><div data-k="d">2. Refine<b>noise → 50 actions, 27 ms</b></div><div data-k="m">3. Execute<b>25 actions, then re-plan</b></div></div>
+      <div class="heatwrap"><h3>Plan: 50 actions × 14 joints, step <span data-n="step">0</span> of 10<span data-n="tau" hidden></span></h3><canvas class="heat" width="300" height="90"></canvas></div>
+      <div class="nums"><div>plans<b data-n="dec">0</b></div><div>time computing<b data-n="pause">0.0 s</b></div><div>on the plate<b data-n="placed">0 / 2</b></div></div>
+    </div>
+  </section>
+</div>
+<div class="diff">
+  <h2>The difference</h2>
+  <table>
+    <tr><th>Measure</th><th>Before π₀</th><th>With π₀</th></tr>
+    <tr><td>How it acts</td><td class="b">one action at a time, as tokens</td><td class="a">50-action plans, from noise in 10 steps</td></tr>
+    <tr><td>Decisions this run</td><td class="b" data-d="decB">–</td><td class="a" data-d="decA">–</td></tr>
+    <tr><td>Time waiting</td><td class="b" data-d="pauseB">–</td><td class="a" data-d="pauseA">–</td></tr>
+    <tr><td>Motion</td><td class="b" data-d="motB">–</td><td class="a" data-d="motA">–</td></tr>
+    <tr><td>Result this run</td><td class="b" data-d="outB">–</td><td class="a" data-d="outA">–</td></tr>
+    <tr><td>Paper, this task (Fig. 7)</td><td class="b">0.00 (OpenVLA)</td><td class="a">0.75</td></tr>
+  </table>
+  <p class="src">Source: Black et al., π₀, arXiv 2410.24164 (Table I, App. D, Fig. 7). Animations are keyframed illustrations, not policy runs.</p>
+</div>
+<div class="err" id="err"><div><b>The 3D library did not load.</b> This page draws the scenes with three.js. Open it once with an internet connection, or download <code>three.min.js</code> from <code>https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js</code> and save it in the same folder as this file. Click to close this message; the panels still run.</div></div>
+<script src="three.min.js"></script>
+<script>if (!window.THREE) { document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>'); }</script>
+<script>
+(function () {
+'use strict';
+/* ---------------- kinematics (pure math) ---------------- */
+const L1 = 0.33, L2 = 0.33, LT = 0.10, SH = 0.11;
+function ik(base, p) {
+  const dx = p[0] - base[0], dz = p[2] - base[2], yaw = Math.atan2(dx, dz), r = Math.hypot(dx, dz), u = p[1] - (base[1] + SH) + LT;
+  let D = (r * r + u * u - L1 * L1 - L2 * L2) / (2 * L1 * L2); D = Math.max(-1, Math.min(1, D)); let best = null;
+  for (const s of [1, -1]) { const a2 = s * Math.acos(D), a1 = Math.atan2(u, r) - Math.atan2(L2 * Math.sin(a2), L1 + L2 * Math.cos(a2)), e = L1 * Math.sin(a1); if (!best || e > best.e) best = { a1, a2, e }; }
+  const t1 = -best.a1, t2 = -best.a2; return [yaw, t1, t2, 0, Math.PI / 2 - t1 - t2, 0];
+}
+function fk(base, q) { const cy = Math.cos(q[0]), sy = Math.sin(q[0]); let f = 0, u = SH, phi = 0; for (const [th, L] of [[q[1], L1], [q[2], L2], [q[4], LT]]) { phi += th; f += L * Math.cos(phi); u -= L * Math.sin(phi); } return [base[0] + sy * f, base[1] + u, base[2] + cy * f]; }
+window.__kin = { ik, fk };
+/* ---------------- task script: motion time 0..18 s ---------------- */
+const BASE_L = [-0.27, 0.03, -0.30], BASE_R = [0.27, 0.03, -0.30], SLOT_L = [-0.045, 0.165, 0.02], SLOT_R = [0.045, 0.165, 0.02], PLATE = [-0.02, 0.006, 0.22];
+const REST_L = [-0.30, 0.27, -0.08], REST_R = [0.30, 0.27, -0.08];
+const KF_L = [[0, REST_L, 0], [2, [-0.045, 0.31, 0.02], 0], [3.6, SLOT_L, 0], [4.1, SLOT_L, 1], [5.5, [-0.045, 0.33, 0.02], 1], [7.5, [-0.07, 0.30, 0.21], 1], [9, [-0.07, 0.05, 0.21], 1], [9.5, [-0.07, 0.05, 0.21], 0], [11.5, REST_L, 0], [40, REST_L, 0]];
+const KF_R = [[0, REST_R, 0], [6, REST_R, 0], [8, [0.045, 0.31, 0.02], 0], [9.6, SLOT_R, 0], [10.1, SLOT_R, 1], [11.5, [0.045, 0.33, 0.02], 1], [13.5, [0.03, 0.30, 0.235], 1], [15, [0.03, 0.065, 0.235], 1], [15.5, [0.03, 0.065, 0.235], 0], [17.5, REST_R, 0], [40, REST_R, 0]];
+const MOTION = 18, HZ = 50, H = 50, EXEC = 25, DROP_AT = 6.0;
+const ease = u => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+function pose(kf, t) { for (let i = 0; i < kf.length - 1; i++) { const a = kf[i], b = kf[i + 1]; if (t >= a[0] && t < b[0]) { const u = ease((t - a[0]) / (b[0] - a[0])); return { p: [0, 1, 2].map(k => a[1][k] + (b[1][k] - a[1][k]) * u), g: a[2] === b[2] ? a[2] : (u < 0.5 ? a[2] : b[2]) }; } } const z = kf[kf.length - 1]; return { p: z[1].slice(), g: z[2] }; }
+function jointsAt(mt, drop) { const l = pose(KF_L, mt), r = pose(KF_R, mt); const q = ik(BASE_L, l.p).concat([l.g]).concat(ik(BASE_R, r.p)).concat([r.g]); if (drop && mt >= DROP_AT) q[6] = 0; return q; }
+const norm = (j, v) => (j % 7 === 6) ? (v ? 1 : -1) : Math.max(-1, Math.min(1, v / Math.PI));
+
+/* ---------------- one simulation column ---------------- */
+const T = window.THREE;
+const sims = [];
+function Sim(root, mode) {
+  const S = this; S.root = root; S.mode = mode; S.t = 0; S.playing = false; S.last = 0;
+  S.before = mode === 'before';
+  S.M0 = S.before ? 3 : 7; S.W = 0.45; S.MV = 0.15; S.STRETCH = S.W / 0.3;
+  S.T_END = S.before ? S.M0 + MOTION * S.STRETCH + 5 : S.M0 + MOTION + 5;
+  S.A = null; S.noise = null; S.tau = 1; S.plans = 0; S.lastSlot = -1; S.placed = 0; S.dropped = 0; S.path = 0; S.stops = 0; S.lastTip = null; S.wasPausing = false;
+  S.$ = s => root.querySelector(s); S.badge = S.$('.badge'); S.cap = S.$('.cap'); S.heat = S.$('.heat'); S.hctx = S.heat.getContext('2d'); S.clock = S.$('.clock'); S.playBtn = S.$('[data-act="play"]');
+  S.$('[data-act="play"]').addEventListener('click', () => S.playing ? S.pause() : S.play()); S.$('[data-act="replay"]').addEventListener('click', () => { S.reset(); S.play(); });
+  S.motionTime = function (t) { if (t < S.M0) return 0; if (!S.before) return Math.min(MOTION, t - S.M0); const k = Math.floor((t - S.M0) / S.W), f = (t - S.M0) - k * S.W; return Math.min(MOTION, k * 0.3 + Math.min(f, S.MV) * (0.3 / S.MV)); };
+  S.pausing = function (t) { if (!S.before || t < S.M0 || S.motionTime(t) >= MOTION) return false; return ((t - S.M0) % S.W) >= S.MV; };
+  S.joints = function (t) { return jointsAt(S.motionTime(t), S.before); };
+  S.chunk = function (mt) { const out = []; for (let i = 1; i <= H; i++) out.push(jointsAt(Math.min(MOTION, mt + i / HZ), false)); return out; };
+  S.newNoise = function () { S.noise = new Float32Array(H * 14); for (let i = 0; i < S.noise.length; i++) { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); S.noise[i] = 0.75 * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); } };
+  S.build3d(); S.reset();
+}
+Sim.prototype.build3d = function () {
+  const S = this; if (!T) return;
+  const canvas = S.$('.view canvas'); const renderer = new T.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; S.renderer = renderer; S.canvas = canvas;
+  const scene = new T.Scene(); scene.background = new T.Color(0x1A2230); scene.fog = new T.Fog(0x1A2230, 2.2, 5.5); S.scene = scene;
+  scene.add(new T.HemisphereLight(0xdfe7f5, 0x3a4150, 0.9));
+  const sun = new T.DirectionalLight(0xffffff, 0.85); sun.position.set(1.1, 2.4, 1.3); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -1.2, right: 1.2, top: 1.2, bottom: -1.2, near: 0.5, far: 6 }); sun.shadow.camera.updateProjectionMatrix(); scene.add(sun);
+  const fill = new T.DirectionalLight(0xbfd3ff, 0.25); fill.position.set(-1.5, 1.2, -1.0); scene.add(fill);
+  const mat = (c, o) => new T.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.7, metalness: 0.05 }, o || {}));
+  const mesh = (geo, m, p, cast) => { const o = new T.Mesh(geo, m); if (p) o.position.set(p[0], p[1], p[2]); o.castShadow = cast !== false; o.receiveShadow = true; return o; };
+  const floor = mesh(new T.PlaneGeometry(8, 8), mat(0x3E4656, { roughness: 1 }), [0, -0.76, 0], false); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+  const grid = new T.GridHelper(8, 32, 0x5A6478, 0x4A5366); grid.position.y = -0.755; scene.add(grid);
+  const wall = mesh(new T.PlaneGeometry(8, 3), mat(0x27303D, { roughness: 1 }), [0, 0.74, -1.6], false); scene.add(wall);
+  scene.add(mesh(new T.BoxGeometry(1.4, 0.04, 0.9), mat(0xD9D3C6), [0, -0.02, 0]));
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) scene.add(mesh(new T.CylinderGeometry(0.025, 0.025, 0.72, 16), mat(0x7E8696, { metalness: 0.4, roughness: 0.5 }), [sx * 0.62, -0.4, sz * 0.38]));
+  scene.add(mesh(new T.BoxGeometry(1.0, 0.03, 0.08), mat(0x2B2F36), [0, 0.015, -0.30]));
+  const toaster = new T.Group(); toaster.position.set(0, 0, 0.02); scene.add(toaster);
+  toaster.add(mesh(new T.BoxGeometry(0.24, 0.16, 0.16), mat(0xB9BEC8, { metalness: 0.6, roughness: 0.35 }), [0, 0.08, 0]));
+  for (const sx of [-1, 1]) toaster.add(mesh(new T.BoxGeometry(0.03, 0.004, 0.13), mat(0x14171C), [sx * 0.045, 0.162, 0], false));
+  toaster.add(mesh(new T.BoxGeometry(0.02, 0.02, 0.03), mat(0x2B2F36), [0.13, 0.06, 0]));
+  scene.add(mesh(new T.CylinderGeometry(0.12, 0.10, 0.012, 40), mat(0xF2F1EC, { roughness: 0.5 }), PLATE));
+  const rim = mesh(new T.TorusGeometry(0.115, 0.006, 10, 40), mat(0xE4E2DA), [PLATE[0], PLATE[1] + 0.008, PLATE[2]], false); rim.rotation.x = Math.PI / 2; scene.add(rim);
+  scene.add(mesh(new T.CylinderGeometry(0.035, 0.03, 0.08, 20), mat(0x5C8ED6, { roughness: 0.4 }), [0.42, 0.04, 0.18]));
+  const toastMat = mat(0xC9955A, { roughness: 0.95 });
+  S.toastL = mesh(new T.BoxGeometry(0.016, 0.11, 0.11), toastMat, [SLOT_L[0], 0.112, 0.02]); S.toastR = mesh(new T.BoxGeometry(0.016, 0.11, 0.11), toastMat, [SLOT_R[0], 0.112, 0.02]); scene.add(S.toastL); scene.add(S.toastR);
+  function makeArm(base, col) {
+    const g = new T.Group(); g.position.set(base[0], base[1], base[2]);
+    g.add(mesh(new T.CylinderGeometry(0.05, 0.055, 0.06, 24), mat(0x2B2F36), [0, 0.03, 0]));
+    const yaw = new T.Group(); yaw.position.y = 0.06; g.add(yaw);
+    yaw.add(mesh(new T.BoxGeometry(0.08, 0.05, 0.08), mat(col), [0, 0.025, 0]));
+    const sh = new T.Group(); sh.position.y = SH - 0.06; yaw.add(sh);
+    const m1 = mesh(new T.CylinderGeometry(0.038, 0.038, 0.07, 20), mat(0x2B2F36), [0, 0, 0]); m1.rotation.z = Math.PI / 2; sh.add(m1);
+    const up = mesh(new T.CylinderGeometry(0.026, 0.024, L1, 20), mat(col), [0, 0, L1 / 2]); up.rotation.x = Math.PI / 2; sh.add(up);
+    const el = new T.Group(); el.position.z = L1; sh.add(el);
+    const m2 = mesh(new T.CylinderGeometry(0.032, 0.032, 0.06, 20), mat(0x2B2F36), [0, 0, 0]); m2.rotation.z = Math.PI / 2; el.add(m2);
+    const fo = mesh(new T.CylinderGeometry(0.022, 0.02, L2, 20), mat(col), [0, 0, L2 / 2]); fo.rotation.x = Math.PI / 2; el.add(fo);
+    const wr = new T.Group(); wr.position.z = L2; el.add(wr);
+    const m3 = mesh(new T.CylinderGeometry(0.026, 0.026, 0.05, 16), mat(0x2B2F36), [0, 0, 0]); m3.rotation.z = Math.PI / 2; wr.add(m3);
+    wr.add(mesh(new T.BoxGeometry(0.07, 0.04, 0.045), mat(0x2B2F36), [0, 0, 0.035]));
+    wr.add(mesh(new T.BoxGeometry(0.03, 0.022, 0.02), mat(0x11161E), [0, 0.03, 0.02]));
+    const fL = mesh(new T.BoxGeometry(0.012, 0.028, 0.06), mat(0xE8E6E1), [-0.035, 0, 0.07]), fR = mesh(new T.BoxGeometry(0.012, 0.028, 0.06), mat(0xE8E6E1), [0.035, 0, 0.07]); wr.add(fL); wr.add(fR);
+    fL.add(mesh(new T.BoxGeometry(0.004, 0.026, 0.03), mat(0x2B2F36, { roughness: 1 }), [0.008, 0, 0.012], false)); fR.add(mesh(new T.BoxGeometry(0.004, 0.026, 0.03), mat(0x2B2F36, { roughness: 1 }), [-0.008, 0, 0.012], false));
+    const cam = new T.PerspectiveCamera(70, 4 / 3, 0.02, 5); cam.position.set(0, 0.045, 0.02); wr.add(cam);
+    return { g, yaw, sh, el, wr, fL, fR, cam, held: null, base };
+  }
+  S.armL = makeArm(BASE_L, S.before ? 0xB8475A : 0x2F9E78); S.armR = makeArm(BASE_R, S.before ? 0xB8475A : 0x3B7DD8); scene.add(S.armL.g); scene.add(S.armR.g);
+  S.baseCam = new T.PerspectiveCamera(50, 4 / 3, 0.05, 10); S.baseCam.position.set(0, 0.52, 0.98); S.baseCam.lookAt(0, 0.07, 0);
+  S.mainCam = new T.PerspectiveCamera(40, 16 / 9, 0.05, 20);
+  const trailMat = new T.LineBasicMaterial({ color: S.before ? 0xE6536A : 0x36C28E });
+  S.trails = [0, 1].map(() => { const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(new Float32Array(6000 * 3), 3)); geo.setDrawRange(0, 0); const line = new T.Line(geo, trailMat); line.frustumCulled = false; scene.add(line); return { geo, n: 0 }; });
+  const planMat = new T.LineDashedMaterial({ color: 0xF2B705, dashSize: 0.012, gapSize: 0.008 });
+  S.plans3d = [0, 1].map(() => { const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(new Float32Array(H * 3), 3)); geo.setDrawRange(0, 0); const line = new T.Line(geo, planMat); line.frustumCulled = false; line.visible = !S.before; scene.add(line); return { geo, line }; });
+  S.crumbGroup = new T.Group(); scene.add(S.crumbGroup); S.crumbGeo = new T.SphereGeometry(0.0045, 6, 5); S.crumbMat = mat(S.before ? 0xE6536A : 0x36C28E, { roughness: 0.4 }); S.crumbT = 0;
+  S.stopGroup = new T.Group(); scene.add(S.stopGroup); S.stopGeo = new T.SphereGeometry(0.007, 8, 6); S.stopMat = mat(0xE6536A, { roughness: 0.4 });
+  S.slipRing = mesh(new T.TorusGeometry(0.05, 0.004, 8, 32), mat(0xE6536A), [0, 0.012, 0], false); S.slipRing.rotation.x = Math.PI / 2; S.slipRing.visible = false; scene.add(S.slipRing);
+  S.camCtx = Array.from(S.root.querySelectorAll('.cam canvas')).map(c => c.getContext('2d'));
+  S.tmp = new T.Vector3();
+};
+Sim.prototype.reset = function () {
+  const S = this; S.t = 0; S.playing = false; S.playBtn.textContent = 'Play'; S.A = null; S.tau = 1; S.plans = 0; S.lastSlot = -1; S.placed = 0; S.dropped = 0; S.path = 0; S.stops = 0; S.lastTip = null; S.wasPausing = false; S.fall = null;
+  if (S.scene) { for (const a of [S.armL, S.armR]) a.held = null; for (const [o, x] of [[S.toastL, SLOT_L[0]], [S.toastR, SLOT_R[0]]]) { S.scene.attach(o); o.position.set(x, 0.112, 0.02); o.rotation.set(0, 0, 0); } for (const tr of S.trails) { tr.n = 0; tr.geo.setDrawRange(0, 0); } for (const p of S.plans3d) p.geo.setDrawRange(0, 0); while (S.stopGroup.children.length) S.stopGroup.remove(S.stopGroup.children[0]); while (S.crumbGroup.children.length) S.crumbGroup.remove(S.crumbGroup.children[0]); S.crumbT = 0; S.slipRing.visible = false; }
+  S.hud();
+};
+Sim.prototype.play = function () { const S = this; if (S.t >= S.T_END) S.reset(); S.playing = true; S.last = performance.now(); S.playBtn.textContent = 'Pause'; };
+Sim.prototype.pause = function () { this.playing = false; this.playBtn.textContent = 'Play'; };
+Sim.prototype.step = function (dt) {
+  const S = this;
+  if (!S.before && S.t >= 2 && S.t < S.M0) {
+    if (!S.A) { S.A = S.chunk(0); S.newNoise(); S.plans = 1; S.setPlanLines(); }
+    S.t += dt; S.tau = Math.min(1, Math.floor((S.t - 2) / 0.5) / 10);
+  } else {
+    S.t += dt; const mt = S.motionTime(S.t);
+    if (!S.before && S.t >= S.M0 && mt < MOTION) { const slot = Math.floor(mt / 0.5); if (slot !== S.lastSlot) { S.lastSlot = slot; S.A = S.chunk(slot * 0.5); S.newNoise(); S.plans = slot + 1; S.setPlanLines(); } const ph = mt - slot * 0.5; S.tau = ph < 0.046 ? 0 : ph < 0.073 ? Math.min(1, Math.floor((ph - 0.046) / 0.0027) / 10) : 1; }
+    if (S.before && S.t >= S.M0 && mt < MOTION) { const slot = Math.floor((S.t - S.M0) / S.W); if (slot !== S.lastSlot) { S.lastSlot = slot; S.A = S.chunk(mt); S.newNoise(); S.plans = slot + 1; } S.tau = 1; }
+  }
+  if (S.t >= S.T_END) { S.t = S.T_END; S.playing = false; S.playBtn.textContent = 'Play'; }
+};
+Sim.prototype.setPlanLines = function () {
+  const S = this; if (!S.scene || !S.A) return;
+  [[0, BASE_L], [7, BASE_R]].forEach(([off, base], k) => { const geo = S.plans3d[k].geo, pos = geo.attributes.position.array; for (let i = 0; i < H; i++) { const p = fk(base, S.A[i].slice(off, off + 6)); pos[3 * i] = p[0]; pos[3 * i + 1] = p[1]; pos[3 * i + 2] = p[2]; } geo.attributes.position.needsUpdate = true; geo.setDrawRange(0, H); S.plans3d[k].line.computeLineDistances(); });
+};
+Sim.prototype.drawHeat = function () {
+  const S = this, c = S.heat, x = S.hctx, pr = Math.min(2, window.devicePixelRatio || 1), W = Math.max(60, c.clientWidth), Hh = Math.max(40, c.clientHeight), cw = W / H, ch = Hh / 14;
+  if (c.width !== Math.round(W * pr) || c.height !== Math.round(Hh * pr)) { c.width = Math.round(W * pr); c.height = Math.round(Hh * pr); }
+  x.setTransform(pr, 0, 0, pr, 0, 0); x.clearRect(0, 0, W, Hh);
+  const cell = v => v > 0 ? 'rgb(255,' + Math.round(255 * (1 - v)) + ',' + Math.round(255 * (1 - v)) + ')' : 'rgb(' + Math.round(255 * (1 + v)) + ',' + Math.round(255 * (1 + v)) + ',255)';
+  const label = (msg, px, pos, col) => { x.font = '700 ' + px + 'px Segoe UI, Arial'; const tw = x.measureText(msg).width; x.fillStyle = 'rgba(10,16,24,.85)'; x.fillRect(pos.x - 5, pos.y - px - 1, tw + 10, px + 8); x.fillStyle = col; x.fillText(msg, pos.x, pos.y); };
+  if (S.before) {
+    if (S.t < S.M0) return;
+    const q = S.joints(S.t), bw = Math.max(cw * 3, 18), pz = S.pausing(S.t);
+    for (let j = 0; j < 14; j++) { x.fillStyle = cell(norm(j, q[j])); x.fillRect(0, j * ch, bw, ch - 0.6); }
+    label('one action (14 numbers) at a time', 14, { x: bw + 14, y: 22 }, '#F3A6B8');
+    label(pz ? 'paused: deciding the next action…' : 'moving one step', 14, { x: bw + 14, y: 48 }, pz ? '#F3A6B8' : '#FFFFFF');
+    return;
+  }
+  if (!S.A) return;
+  for (let i = 0; i < H; i++) for (let j = 0; j < 14; j++) { const v = Math.max(-1, Math.min(1, S.tau * norm(j, S.A[i][j]) + (1 - S.tau) * S.noise[i * 14 + j])); x.fillStyle = cell(v); x.fillRect(i * cw, j * ch, cw - 0.5, ch - 0.6); }
+  if (S.tau >= 1) { x.strokeStyle = '#36C28E'; x.lineWidth = 2; x.strokeRect(1, 1, cw * EXEC - 2, Hh - 2); label('executed: 25', 13, { x: 8, y: 19 }, '#8FE3C9'); label('planned ahead: 25', 13, { x: cw * EXEC + 8, y: 19 }, '#F2B705'); }
+  else label('noise → plan, step ' + Math.round(S.tau * 10) + ' of 10', 14, { x: 8, y: 20 }, '#FFFFFF');
+};
+Sim.prototype.hud = function () {
+  const S = this, t = S.t, mt = S.motionTime(t), done = mt >= MOTION && t >= S.M0;
+  const boxes = S.root.querySelectorAll('.boxes div'); const set = (k, on) => boxes.forEach(b => { if (b.dataset.k === k) b.classList.toggle('on', on); });
+  const setN = (k, v) => { const e = S.root.querySelector('[data-n="' + k + '"]'); if (e) e.textContent = v; };
+  let badge, cap;
+  if (S.before) {
+    const NB = Math.round(MOTION / 0.3), k = Math.floor((t - S.M0) / S.W), pz = S.pausing(t);
+    const dec = t < S.M0 ? 0 : Math.min(NB, k + 1), paused = t < S.M0 ? 0 : Math.min(NB, k) * (S.W - S.MV);
+    badge = t < S.M0 ? 'Reading cameras, text, joints' : done ? 'Done: ' + S.placed + ' placed, ' + S.dropped + ' dropped' : (pz ? 'Paused: deciding the next action' : 'Moving one step');
+    cap = t < S.M0 ? 'Decides one action at a time: move a step, pause, decide again.'
+      : done ? 'Done: <b>' + S.placed + ' of 2</b> on the plate after <b>' + dec + ' decisions</b> and <b>' + paused.toFixed(1) + ' s</b> paused.'
+      : (mt >= DROP_AT && mt < DROP_AT + 3 ? '<b>The slice slips.</b> Stop-and-go control is too slow to correct it.' : 'Move a step, pause, decide again: <b>' + dec + ' decisions</b>, <b>' + paused.toFixed(1) + ' s</b> paused so far.');
+    set('o', t >= S.M0 && pz && !done); set('d', t >= S.M0 && pz && !done); set('m', t >= S.M0 && !pz && !done);
+    setN('dec', dec); setN('pause', paused.toFixed(1) + ' s');
+  } else {
+    const inM = t >= S.M0 && !done, ph = inM ? (mt % 0.5) : 0, ai = inM ? Math.min(EXEC, Math.floor(ph * HZ) + 1) : 0, k = Math.round(S.tau * 10);
+    badge = t < 2 ? 'Reading 3 cameras, text, 14 joints' : t < S.M0 ? 'Plan 1 (slowed down): step ' + k + ' of 10' : done ? 'Done: ' + S.placed + ' of 2 placed' : (ph < 0.073 ? 'Planning (73 ms)' : 'Executing action ' + ai + ' of 25');
+    cap = t < 2 ? 'Reads 3 camera images, the instruction and 14 joint angles.'
+      : t < S.M0 ? 'Turning noise into 50 actions in 10 steps. Slowed down: for real it takes <b>73 ms</b>.'
+      : done ? 'Done: <b>' + S.placed + ' of 2</b> on the plate with <b>' + S.plans + ' plans</b> and <b>' + (S.plans * 0.073).toFixed(1) + ' s</b> computing.'
+      : 'Gold dots: the next second it has planned. Plays <b>25 actions</b>, then re-plans. <b>' + S.plans + ' plans</b> so far.';
+    set('o', inM && ph < 0.046); set('d', (t >= 2 && t < S.M0) || (inM && ph >= 0.046 && ph < 0.073)); set('m', inM && ph >= 0.073);
+    setN('dec', S.plans); setN('pause', (S.plans * 0.073).toFixed(1) + ' s'); setN('tau', S.tau.toFixed(1)); setN('step', k);
+  }
+  setN('placed', S.placed + ' / 2');
+  S.badge.textContent = badge; S.cap.innerHTML = cap; S.clock.textContent = '0:' + String(Math.floor(t)).padStart(2, '0');
+  S.drawHeat();
+};
+Sim.prototype.setArm = function (arm, q, g, toast, slotX) {
+  const S = this; arm.yaw.rotation.y = q[0]; arm.sh.rotation.x = q[1]; arm.el.rotation.x = q[2]; arm.wr.rotation.x = q[4];
+  const gap = g ? 0.014 : 0.035; arm.fL.position.x = -gap; arm.fR.position.x = gap; arm.wr.updateMatrixWorld(true);
+  S.tmp.set(0, 0, LT); arm.wr.localToWorld(S.tmp); const tip = [S.tmp.x, S.tmp.y, S.tmp.z];
+  if (g && !arm.held && Math.hypot(tip[0] - toast.position.x, tip[1] - 0.165, tip[2] - toast.position.z) < 0.05) { arm.wr.attach(toast); arm.held = toast; }
+  if (!g && arm.held) { const o = arm.held; S.scene.attach(o); const onPlate = Math.hypot(o.position.x - PLATE[0], o.position.z - PLATE[2]) < 0.14 && tip[1] < 0.12; if (onPlate) { S.placed++; o.position.y = 0.014 + (slotX > 0 ? 0.016 : 0); o.rotation.set(0, 0, Math.PI / 2); } else { S.dropped++; const to = [slotX < 0 ? Math.min(o.position.x, -0.19) : Math.max(o.position.x, 0.19), 0.012, Math.max(o.position.z, 0.06) + 0.04]; S.fall = { o, from: [o.position.x, o.position.y, o.position.z], to, r0: [o.rotation.x, o.rotation.y, o.rotation.z], r1: [0, 0.6 * slotX, Math.PI / 2], t0: performance.now() }; S.slipRing.position.set(to[0], 0.013, to[2]); S.slipRing.visible = true; } arm.held = null; }
+  return tip;
+};
+Sim.prototype.render = function (now, camIdx) {
+  const S = this; if (!S.renderer) return;
+  const canvas = S.canvas, w = canvas.clientWidth, h = canvas.clientHeight, pr = S.renderer.getPixelRatio(); if (w < 4 || h < 4) return;
+  if (canvas.width !== Math.round(w * pr) || canvas.height !== Math.round(h * pr)) S.renderer.setSize(w, h, false);
+  const q = S.joints(S.t), tips = [S.setArm(S.armL, q.slice(0, 7), q[6], S.toastL, -1), S.setArm(S.armR, q.slice(7, 14), q[13], S.toastR, 1)];
+  if (S.playing && S.t >= S.M0 && S.motionTime(S.t) < MOTION) {
+    tips.forEach((tip, k) => { const tr = S.trails[k]; if (tr.n < 6000) { const a = tr.geo.attributes.position.array; a[3 * tr.n] = tip[0]; a[3 * tr.n + 1] = tip[1]; a[3 * tr.n + 2] = tip[2]; tr.n++; tr.geo.attributes.position.needsUpdate = true; tr.geo.setDrawRange(0, tr.n); } });
+    if (S.lastTip) S.path += Math.hypot(tips[0][0] - S.lastTip[0][0], tips[0][1] - S.lastTip[0][1], tips[0][2] - S.lastTip[0][2]) + Math.hypot(tips[1][0] - S.lastTip[1][0], tips[1][1] - S.lastTip[1][1], tips[1][2] - S.lastTip[1][2]);
+    S.crumbT += 1 / 60; if (S.crumbT >= 0.2) { S.crumbT = 0; tips.forEach(tip => { const m = new T.Mesh(S.crumbGeo, S.crumbMat); m.position.set(tip[0], tip[1], tip[2]); S.crumbGroup.add(m); }); }
+    const pz = S.pausing(S.t); if (pz && !S.wasPausing) { S.stops++; const k = S.motionTime(S.t) < 11.5 ? 0 : 1; const m = new T.Mesh(S.stopGeo, S.stopMat); m.position.set(tips[k][0], tips[k][1], tips[k][2]); S.stopGroup.add(m); } S.wasPausing = pz;
+  }
+  S.lastTip = tips;
+  if (S.fall) { const f = S.fall, u = Math.min(1, (now - f.t0) / 350), o = f.o; o.position.set(f.from[0] + (f.to[0] - f.from[0]) * u, f.from[1] + (f.to[1] - f.from[1]) * u * u, f.from[2] + (f.to[2] - f.from[2]) * u); o.rotation.set(f.r0[0] + (f.r1[0] - f.r0[0]) * u, f.r0[1] + (f.r1[1] - f.r0[1]) * u, f.r0[2] + (f.r1[2] - f.r0[2]) * u); if (u >= 1) S.fall = null; }
+  S.renderer.setScissorTest(true);
+  [[S.armL.cam, S.armL], [S.armR.cam, S.armR], [S.baseCam, null]].forEach(([cam, arm], i) => {
+    const c2 = S.camCtx[i].canvas, r = c2.getBoundingClientRect(), vw = Math.max(2, Math.round(r.width)), vh = Math.max(2, Math.round(r.height));
+    if (c2.width !== vw * pr || c2.height !== vh * pr) { c2.width = vw * pr; c2.height = vh * pr; }
+    if (arm) { S.tmp.set(0, 0, LT + 0.06); arm.wr.localToWorld(S.tmp); cam.lookAt(S.tmp); }
+    cam.aspect = vw / vh; cam.updateProjectionMatrix(); S.renderer.setViewport(0, 0, vw, vh); S.renderer.setScissor(0, 0, vw, vh); S.renderer.render(S.scene, cam);
+    S.camCtx[i].drawImage(canvas, 0, canvas.height - vh * pr, vw * pr, vh * pr, 0, 0, vw * pr, vh * pr);
+  });
+  S.renderer.setScissorTest(false);
+  const V = [[0.95, 0.62, 1.05], [-1.0, 0.55, 0.95], [0.0, 1.35, 0.72]][camIdx], a = 0.18 * Math.sin(now / 9000);
+  S.mainCam.position.set(V[0] * Math.cos(a) - V[2] * Math.sin(a), V[1], V[0] * Math.sin(a) + V[2] * Math.cos(a)); S.mainCam.aspect = w / h; S.mainCam.updateProjectionMatrix(); S.mainCam.lookAt(0, 0.08, 0.02);
+  S.renderer.setViewport(0, 0, w, h); S.renderer.render(S.scene, S.mainCam);
+};
+
+/* ---------------- page ---------------- */
+let camIdx = 0;
+try { sims.push(new Sim(document.getElementById('colB'), 'before'), new Sim(document.getElementById('colA'), 'pi0')); if (!T) document.getElementById('err').classList.add('on'); }
+catch (e) { document.getElementById('err').classList.add('on'); document.querySelector('#err div').innerHTML += '<br><br>Error: ' + String(e.message || e); }
+document.getElementById('err').addEventListener('click', () => document.getElementById('err').classList.remove('on'));
+document.getElementById('playBoth').addEventListener('click', () => sims.forEach(s => { if (s.t >= s.T_END) s.reset(); s.play(); }));
+document.getElementById('resetBoth').addEventListener('click', () => sims.forEach(s => s.reset()));
+document.getElementById('camBtn').addEventListener('click', () => { camIdx = (camIdx + 1) % 3; });
+document.addEventListener('keydown', e => { if (e.key === ' ') { e.preventDefault(); const any = sims.some(s => s.playing); sims.forEach(s => { if (any) s.pause(); else { if (s.t >= s.T_END) s.reset(); s.play(); } }); } if (e.key === 'c' || e.key === 'C') camIdx = (camIdx + 1) % 3; if (e.key === 'r' || e.key === 'R') sims.forEach(s => { s.reset(); s.play(); }); });
+function diff() {
+  const B = sims[0], A = sims[1]; if (!B || !A) return; const d = k => document.querySelector('[data-d="' + k + '"]');
+  const NB = Math.round(MOTION / 0.3), kB = Math.floor((B.t - B.M0) / B.W);
+  const decB = B.t < B.M0 ? 0 : Math.min(NB, kB + 1), pB = B.t < B.M0 ? 0 : Math.min(NB, kB) * (B.W - B.MV);
+  const doneB = B.t >= B.M0 && B.motionTime(B.t) >= MOTION, doneA = A.t >= A.M0 && A.motionTime(A.t) >= MOTION;
+  d('decB').textContent = B.t > 0 ? decB + ' decisions' : '–';
+  d('decA').textContent = A.t > 0 ? A.plans + ' plans' : '–';
+  d('pauseB').textContent = B.t > B.M0 ? pB.toFixed(1) + ' s paused' : '–';
+  d('pauseA').textContent = A.t > 0 ? (A.plans * 0.073).toFixed(1) + ' s computing' : '–';
+  d('motB').textContent = B.t > B.M0 ? 'stop-and-go' : '–';
+  d('motA').textContent = A.t > A.M0 ? 'smooth, 50 Hz' : '–';
+  d('outB').textContent = doneB ? B.placed + ' of 2 on the plate' + (B.dropped ? ', ' + B.dropped + ' dropped' : '') : (B.t > 0 ? 'running…' : '–');
+  d('outA').textContent = doneA ? A.placed + ' of 2 on the plate' : (A.t > 0 ? 'running…' : '–');
+}
+function frame(now) { for (const s of sims) { if (s.playing) { const dt = Math.min(0.1, (now - s.last) / 1000); s.last = now; s.step(dt); } s.hud(); s.render(now, camIdx); } diff(); requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
